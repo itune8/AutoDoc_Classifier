@@ -1,12 +1,18 @@
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
+from app.logger import get_logger
+from app.config import DATABASE_PATH
 
-DB_PATH = Path(__file__).resolve().parent.parent / "documents.db"
+logger = get_logger(__name__)
+
+DB_PATH = DATABASE_PATH
 
 
 def get_connection() -> sqlite3.Connection:
+    """Get database connection with row factory."""
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     return conn
 
 
@@ -96,6 +102,9 @@ def init_db() -> None:
 
 
 def insert_document(file_path: str, document_type: str, text: str) -> int:
+    """Insert a document record and return its ID."""
+    logger.info(f"Inserting document: {file_path}, type: {document_type}")
+    
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -105,7 +114,40 @@ def insert_document(file_path: str, document_type: str, text: str) -> int:
     document_id = cur.lastrowid
     conn.commit()
     conn.close()
+    
+    logger.info(f"Document inserted with ID: {document_id}")
     return document_id
+
+
+def get_all_documents() -> List[Dict]:
+    """Get all documents from database."""
+    logger.debug("Fetching all documents")
+    
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, file_path, document_type FROM documents ORDER BY id DESC")
+    
+    rows = cur.fetchall()
+    conn.close()
+    
+    documents = [dict(row) for row in rows]
+    logger.debug(f"Found {len(documents)} documents")
+    
+    return documents
+
+
+def get_document_by_id(doc_id: int) -> Optional[Dict]:
+    """Get a specific document by ID."""
+    logger.debug(f"Fetching document ID: {doc_id}")
+    
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM documents WHERE id = ?", (doc_id,))
+    
+    row = cur.fetchone()
+    conn.close()
+    
+    return dict(row) if row else None
 
 
 def insert_invoice(document_id: int, fields: Dict[str, Any]) -> None:
