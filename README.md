@@ -77,6 +77,26 @@ pip install -r requirements.txt
 
 ## 🎯 Usage
 
+### Streamlit Web Interface (Recommended)
+
+Launch the interactive web application:
+
+```bash
+# Run the Streamlit app
+streamlit run app/app.py
+
+# Or use the provided script
+./run_streamlit.sh
+```
+
+The app will open automatically in your browser at `http://localhost:8501`
+
+**Features:**
+- 📤 Drag-and-drop file upload
+- 🔍 Real-time document classification
+- 📊 Interactive statistics dashboard
+- 📚 Document history viewer
+
 ### Command Line Interface
 
 Process a single document:
@@ -91,15 +111,18 @@ Or using the main module directly:
 python -m app.main path/to/document.pdf
 ```
 
-### Web Interface
+### REST API
 
-Start the web server:
+Start the Flask API server:
 
 ```bash
-python -m app.web
+python -m app.api
 ```
 
-Then open your browser and navigate to the provided URL to upload and process documents through the web interface.
+API will be available at `http://localhost:5000`. Example endpoints:
+- `GET /health` - Health check
+- `POST /api/v1/classify` - Upload and classify document
+- `GET /api/v1/documents` - List all documents
 
 ### Database Inspection
 
